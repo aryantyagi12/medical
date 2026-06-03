@@ -36,6 +36,15 @@ def ingest_pdf(pdf_path: str):
         )
         print(f"Created Pinecone index: {index_name}")
 
+    # Check if index already has vectors — skip re-upload if so
+    index = pc.Index(index_name)
+    stats = index.describe_index_stats()
+    total_vectors = stats.get("total_vector_count", 0)
+
+    if total_vectors > 0:
+        print(f"Index already has {total_vectors} vectors. Skipping re-upload.")
+        return PineconeVectorStore(index_name=index_name, embedding=embeddings)
+
     vectorstore = PineconeVectorStore.from_documents(
         documents=chunks,
         embedding=embeddings,

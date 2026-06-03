@@ -35,3 +35,7 @@ chroma_db/
 *.bin
 *.pt
 *.onnx
+
+# Docker (local use only)
+Dockerfile
+.dockerignore

@@ -1,16 +1,17 @@
 import os
+from operator import itemgetter
 from dotenv import load_dotenv
-from langchain_huggingface import HuggingFaceEmbeddings, HuggingFacePipeline
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_groq import ChatGroq
 from langchain_pinecone import PineconeVectorStore
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables import RunnablePassthrough
-from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 
 load_dotenv()
 
+
 def build_rag_chain():
-    # 1. Embeddings
+    # 1. Embeddings (runs locally — small & fast)
     embeddings = HuggingFaceEmbeddings(
         model_name="sentence-transformers/all-MiniLM-L6-v2"
     )
@@ -25,31 +26,22 @@ def build_rag_chain():
         search_kwargs={"k": 4}
     )
 
-    # 3. Local LLM — facebook/opt-125m runs on CPU, no API needed
-    model_id = "facebook/opt-125m"
-    tokenizer = AutoTokenizer.from_pretrained(model_id)
-    model = AutoModelForCausalLM.from_pretrained(model_id)
-    pipe = pipeline(
-        "text-generation",
-        model=model,
-        tokenizer=tokenizer,
-        max_new_tokens=256,
-        do_sample=False,
-        pad_token_id=tokenizer.eos_token_id
+    # 3. LLM via Groq (free, fast — uses GROQ_API_KEY env var)
+    llm = ChatGroq(
+        model="llama-3.1-8b-instant",
+        temperature=0,
+        max_tokens=300,
     )
-    llm = HuggingFacePipeline(pipeline=pipe)
 
     # 4. Prompt
     prompt = PromptTemplate(
-        template = """
-Answer the question using the context below.
+        template="""Answer the question using ONLY the context below.
 
 Rules:
-- Give only one answer.
+- Give a clear, direct answer.
 - Do not repeat information.
-- Answer in 2-3 sentences maximum.
-- If the answer is not present, say:
-  "I couldn't find that in the document."
+- Answer in 2-4 sentences maximum.
+- If the answer is not in the context, say: "I couldn't find that in the document."
 
 Context:
 {context}
@@ -57,8 +49,7 @@ Context:
 Question:
 {question}
 
-Answer:
-""",
+Answer:""",
         input_variables=["context", "question"]
     )
 
@@ -66,8 +57,13 @@ Answer:
     def format_docs(docs):
         return "\n\n".join(doc.page_content for doc in docs)
 
+    # Input must be a dict: {"question": "<user question>"}
+    # itemgetter pulls the question string out for the retriever and prompt
     chain = (
-        {"context": retriever | format_docs, "question": RunnablePassthrough()}
+        {
+            "context": itemgetter("question") | retriever | format_docs,
+            "question": itemgetter("question"),
+        }
         | prompt
         | llm
         | StrOutputParser()
@@ -78,7 +74,8 @@ Answer:
 
 def ask(chain_tuple, question: str) -> dict:
     chain, retriever = chain_tuple
-    answer = chain.invoke(question)
+    # Pass a dict so itemgetter("question") works correctly inside the chain
+    answer = chain.invoke({"question": question})
     source_docs = retriever.invoke(question)
     return {
         "answer": answer,

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MedAI — Medical Knowledge Assistant</title>
+  <meta name="description" content="Ask questions about your medical documents using AI-powered retrieval." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="app-wrapper">
+
+    <!-- ── Sidebar ─────────────────────────────────────────────── -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <div class="logo-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" fill="#00d4aa" opacity="0.2"/>
+              <path d="M13 7h-2v4H7v2h4v4h2v-4h4v-2h-4V7z" fill="#00d4aa"/>
+            </svg>
+          </div>
+          <span class="logo-text">MedAI</span>
+        </div>
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <button class="new-chat-btn" id="newChatBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        New Chat
+      </button>
+
+      <div class="sidebar-section-label">Recent</div>
+      <nav class="chat-history" id="chatHistory">
+        <!-- Populated by JS -->
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="status-pill" id="statusPill">
+          <span class="status-dot"></span>
+          <span id="statusText">Connecting…</span>
+        </div>
+        <p class="sidebar-info">Powered by LangChain · Pinecone · HuggingFace</p>
+      </div>
+    </aside>
+
+    <!-- ── Main Chat ───────────────────────────────────────────── -->
+    <main class="chat-main">
+      <header class="chat-header">
+        <button class="mobile-sidebar-btn" id="mobileSidebarBtn" aria-label="Open sidebar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+        <div class="chat-header-info">
+          <h1 class="chat-title">Medical Knowledge Assistant</h1>
+          <span class="chat-subtitle">Ask anything from your medical document</span>
+        </div>
+      </header>
+
+      <div class="messages-container" id="messagesContainer">
+        <!-- Welcome screen -->
+        <div class="welcome-screen" id="welcomeScreen">
+          <div class="welcome-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" fill="#00d4aa" opacity="0.15"/>
+              <path d="M13 7h-2v4H7v2h4v4h2v-4h4v-2h-4V7z" fill="#00d4aa"/>
+            </svg>
+          </div>
+          <h2 class="welcome-title">How can I help you today?</h2>
+          <p class="welcome-desc">Ask any medical question and I'll search through the document to give you an accurate answer with source references.</p>
+          <div class="suggestion-grid">
+            <button class="suggestion-chip" data-q="What are the symptoms of diabetes?">What are the symptoms of diabetes?</button>
+            <button class="suggestion-chip" data-q="How does the immune system work?">How does the immune system work?</button>
+            <button class="suggestion-chip" data-q="What is hypertension and how is it treated?">What is hypertension and how is it treated?</button>
+            <button class="suggestion-chip" data-q="Explain the stages of wound healing.">Explain the stages of wound healing.</button>
+          </div>
+        </div>
+        <!-- Messages appended here -->
+      </div>
+
+      <div class="input-area">
+        <div class="input-wrapper">
+          <textarea
+            id="questionInput"
+            class="question-input"
+            placeholder="Ask a medical question…"
+            rows="1"
+            maxlength="1000"
+            aria-label="Your question"
+          ></textarea>
+          <button class="send-btn" id="sendBtn" aria-label="Send question" disabled>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+          </button>
+        </div>
+        <p class="input-hint">MedAI can make mistakes. Always consult a healthcare professional.</p>
+      </div>
+    </main>
+
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
